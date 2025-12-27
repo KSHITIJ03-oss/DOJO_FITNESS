@@ -1,0 +1,14 @@
+# Python
+my_venv/
+__pycache__/
+*.pyc
+
+# Node / React
+gym-frontend/node_modules/
+gym-frontend/dist/
+gym-frontend/.env
+
+# IDE / OS
+.cursor/
+.vscode/
+.DS_Store
