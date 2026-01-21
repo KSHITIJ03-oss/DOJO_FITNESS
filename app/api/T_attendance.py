@@ -121,7 +121,7 @@ def list_attendance(skip: int = 0, limit: int = 100, db: Session = Depends(get_d
 
 
 @router.get("/me", response_model=list[TrainerAttendanceOut],
-            dependencies=[Depends(require_roles(["trainer"]))])
+            dependencies=[Depends(require_roles(["admin", "trainer"]))])
 def my_attendance(current_user = Depends(require_roles(["trainer"])), db: Session = Depends(get_db)):
     """
     Trainer can view their own attendance history.
@@ -142,4 +142,39 @@ def today_attendance(db: Session = Depends(get_db)):
     rows = db.query(TrainerAttendance).filter(
         TrainerAttendance.check_in >= start_of_day
     ).order_by(TrainerAttendance.check_in.desc()).all()
+    return rows
+
+from datetime import datetime, date, timezone
+
+@router.get(
+    "/by-trainer",
+    response_model=list[TrainerAttendanceOut],
+    dependencies=[Depends(require_roles(["admin", "receptionist"]))],
+)
+def get_attendance_by_trainer(
+    trainer_id: int,
+    start_date: date,
+    end_date: date,
+    db: Session = Depends(get_db),
+):
+    """
+    Get attendance of a specific trainer within a date range.
+    Useful for monthly, weekly, or payroll attendance.
+    """
+
+    # Convert dates to full UTC datetime range
+    start_dt = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
+    end_dt = datetime.combine(end_date, datetime.max.time(), tzinfo=timezone.utc)
+
+    rows = (
+        db.query(TrainerAttendance)
+        .filter(
+            TrainerAttendance.trainer_id == trainer_id,
+            TrainerAttendance.check_in >= start_dt,
+            TrainerAttendance.check_in <= end_dt,
+        )
+        .order_by(TrainerAttendance.check_in.asc())
+        .all()
+    )
+
     return rows

@@ -49,6 +49,8 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.db.database import Base, engine
 from app.models import members  # ensure models are registered before create_all
@@ -59,6 +61,9 @@ from app.api import membership_plans
 from app.api import member_memberships
 from app.api import T_attendance
 from app.api import trainers_profile
+from app.api import queries
+from app.api import workout
+from app.api import fitness_checkups
 
 # ---------- AUTH TOKEN SCHEME FOR SWAGGER ----------
 security = HTTPBearer()
@@ -90,6 +95,20 @@ app = FastAPI(
     swagger_ui_parameters={"persistAuthorization": True}
 )
 
+# ---------- CORS MIDDLEWARE ----------
+# Allow frontend to make requests from localhost:5173
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        # "http://localhost:5173",  # Vite dev server
+        # "http://localhost:3000",  # Alternative React dev server
+        # "http://127.0.0.1:5173",
+        "*"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- ROUTES ----------
 # Secure admin routes by default using token
@@ -116,6 +135,21 @@ app.include_router(T_attendance.router)
 # Trainer's profile route
 app.include_router(trainers_profile.router)
 
+# queries route
+app.include_router(queries.router)
+
+# workout route
+app.include_router(workout.router)
+
+# fitness checkup route
+app.include_router(fitness_checkups.router)
+
+# ---------- STATIC FILE SERVING ----------
+# Serve uploaded files (images, documents, etc.)
+from pathlib import Path
+uploads_path = Path(__file__).parent.parent / "uploads"
+uploads_path.mkdir(exist_ok=True)  # Create uploads dir if it doesn't exist
+app.mount("/uploads", StaticFiles(directory=str(uploads_path)), name="uploads")
 
 # ---------- TEST ROUTE ----------
 @app.get("/")

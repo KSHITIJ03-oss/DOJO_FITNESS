@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Enum
 from datetime import datetime, timezone
 from app.db.base import Base
 import enum
-
+from sqlalchemy.orm import relationship
 
 class role(str, enum.Enum):
     admin = "admin"
@@ -30,3 +30,4 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
 
+    workouts = relationship("Workout", back_populates="user", cascade="all, delete-orphan")

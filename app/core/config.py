@@ -33,6 +33,6 @@
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:kshitij123@localhost:3306/dojo_fitness")
-JWT_SECRET = os.getenv("JWT_SECRET", "change-this-secret")
+JWT_SECRET = os.getenv("JWT_SECRET", "yeah@boii")
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))

@@ -6,7 +6,7 @@ from app.db.database import get_db
 from app.models.user import User
 from app.auth.hashing import hash_password, verify_password
 from app.auth.jwt_handler import create_access_token
-
+from app.api.deps import get_current_user;
 router = APIRouter(tags=["auth"], prefix="/auth")
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -43,3 +43,12 @@ def login(payload: LoginIn, db: Session = Depends(get_db)):
 
     token = create_access_token(subject=user.id, data={"role": user.role})
     return {"access_token": token, "token_type": "bearer"}
+
+@router.get("/me")
+def get_current_user(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role,
+    }

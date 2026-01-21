@@ -16,7 +16,11 @@ class Member(Base):
     membership_type = Column(String(50), nullable=True)   # monthly / quarterly / yearly / Custom
     membership_start = Column(Date, nullable=True)
     membership_end = Column(Date, nullable=True)
+    image_url = Column(String(255), nullable=True)  # Path to member profile image
 
+    # Fitness Checkup tracking
+    last_fitness_checkup_date = Column(Date, nullable=True)
+    next_fitness_checkup_date = Column(Date, nullable=True)
     
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 

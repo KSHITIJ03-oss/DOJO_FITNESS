@@ -10,6 +10,9 @@ class MemberBase(BaseModel):
     membership_type: str | None = None
     membership_start: date | None = None
     membership_end: date | None = None
+    image_url: str | None = None
+    last_fitness_checkup_date: date | None = None
+    next_fitness_checkup_date: date | None = None
 
 
 class MemberCreate(MemberBase):

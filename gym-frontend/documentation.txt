@@ -1,0 +1,535 @@
+# DOJO Fitness Gym Frontend — End-to-End Technical Documentation
+
+## Table of Contents
+
+1. [Project Overview and Purpose](#project-overview-and-purpose)
+2. [Folder and File Structure](#folder-and-file-structure)
+3. [Detailed File and Component Explanations](#detailed-file-and-component-explanations)
+    - [API Layer](#api-layer)
+    - [Authentication Components](#authentication-components)
+    - [Dashboard and Analytics](#dashboard-and-analytics)
+    - [Workout Management](#workout-management)
+    - [Exercise Library](#exercise-library)
+    - [User Profile Management](#user-profile-management)
+    - [UI and Common Components](#ui-and-common-components)
+    - [Hooks and Utilities](#hooks-and-utilities)
+    - [Routing](#routing)
+    - [State Management](#state-management)
+    - [Error Handling and Validation](#error-handling-and-validation)
+    - [Third-Party Libraries Used](#third-party-libraries-used)
+4. [Backend API Integration](#backend-api-integration)
+5. [How to Run the Project Locally](#how-to-run-the-project-locally)
+6. [Examples and Usage Patterns](#examples-and-usage-patterns)
+7. [Conclusion](#conclusion)
+
+---
+
+## Project Overview and Purpose
+
+**DOJO Fitness Frontend** is a production-ready, responsive React application for managing gym workflows such as authentication, workout planning, tracking, user analytics, and administration. It is designed with modern UI/UX principles to offer an experience comparable to Fitbod, Cult.fit, etc.
+
+**Key Goals:**
+- Smooth onboarding, authentication, and user management.
+- Efficient workout and exercise management.
+- Insightful analytics/dashboard for gym members and admins.
+- Seamless interaction with a FastAPI-powered backend.
+- Responsive & modern user interface with dark mode by default.
+
+---
+
+## Folder and File Structure
+
+(The application follows a scalable, modular structure.)
+
+```
+gym-frontend/
+├── public/
+│   ├── index.html
+│   └── ...
+├── src/
+│   ├── api/
+│   │   ├── axios.js
+│   │   ├── auth.js
+|   |   |-- lead.js
+│   │   ├── workouts.js
+│   │   ├── exercises.js
+│   │   ├── queries.js
+│   │   └── members.js
+│   ├── components/
+│   │   ├── forms/
+│   │   │   ├── Button.jsx
+│   │   │   ├── input.jsx
+│   │   │   ├── MemberForm.jsx
+│   │   ├── public/
+│   │   │   ├── CTAButton.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── InputField.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── SectionWrapper.jsx
+│   │   ├── Workouts/
+│   │   │   ├── WorkoutList.jsx
+│   │   │   ├── WorkoutForm.jsx
+│   │   ├── Exercises/
+│   │   │   ├── ExerciseList.jsx
+│   │   │   ├── ExerciseCard.jsx
+│   │   ├── UserProfile/
+│   │   │   ├── Profile.jsx
+│   │   │   ├── Settings.jsx
+│   │   ├── UI/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── Loader.jsx
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useApi.js
+│   │   ├── useTheme.js
+│   ├── pages/
+│   │   ├── public/
+│   │   │   ├── Contact.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── JoinUs.jsx
+│   │   │   ├── TryUs.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── RegisterPage.jsx
+│   │   ├── DashboardPage.jsx
+│   │   ├── WorkoutsPage.jsx
+│   │   ├── ExercisesPage.jsx
+│   │   ├── ProfilePage.jsx
+│   ├── App.jsx
+│   ├── main.jsx
+│   ├── router.jsx
+│   ├── store.js
+│   ├── theme.js
+│   └── index.css
+├── .env
+├── package.json
+└── README.md
+```
+
+### Key Directory Purposes
+
+- **src/api**: All API client logic and service methods, abstracted per domain (auth, workouts, etc).
+- **src/components**: All reusable React components, grouped by feature.
+- **src/hooks**: Custom React hooks for business logic (auth, API, theme).
+- **src/pages**: Page-level wrapper components for routing.
+- **src/store.js**: Centralized state management (usually via Zustand, Redux, or Context API).
+- **src/router.jsx**: Routing logic (React Router v6+).
+- **src/theme.js**: Theme and dark mode management.
+
+---
+
+## Detailed File and Component Explanations
+
+### API Layer
+
+**Purpose:** Abstracts all backend interactions, ensuring UI components remain clean and declarative.
+
+#### `src/api/axios.js`
+
+- Sets up the Axios instance with:
+    - `baseURL` (from ENV)
+    - Request/response interceptors for JWT tokens and error handling.
+- Example:
+  ```js
+  // axios.js
+  import axios from 'axios';
+  const api = axios.create({ baseURL: import.meta.env.VITE_API_BASE_URL });
+  // ...add interceptors for token, error, etc.
+  export default api;
+  ```
+
+#### `src/api/auth.js`, `workouts.js`, `exercises.js`, `user.js`
+
+- Functions: `login`, `register`, `getUser`, `getWorkouts`, `createWorkout`, etc.
+- Each exports well-typed functions that return Promises.
+- E.g., `auth.js`
+  ```js
+  export const login = (credentials) => api.post('/auth/login', credentials);
+  ```
+
+### Authentication Components
+
+#### `src/components/Auth/Login.jsx` & `Register.jsx`
+
+- Render login/register form UI.
+- Use state to capture input (email, password, etc.).
+- Submit invokes API (`auth.login`/`auth.register`).
+- Handles loading, error, and success states.
+- Uses form validation logic (React Hook Form/Yup or custom).
+
+**Props:** None (read from context/hook as needed).
+
+### Dashboard and Analytics
+
+#### `src/components/Dashboard/`
+
+- **DashboardHome.jsx** loads cards (e.g., active members, recent activity).
+- **StatsCard.jsx** displays individual stats (props: label, value, icon).
+- Data fetched using effect hooks and relevant API methods.
+
+### Workout Management
+
+#### `src/components/Workouts/`
+
+- **WorkoutList.jsx**: Lists user workouts.
+    - Props: `workouts`, `onSelectWorkout`.
+    - Calls `api/workouts.js` to fetch.
+- **WorkoutForm.jsx**: Form for creating/editing a workout.
+    - Props: `initialValues`, `onSubmit`.
+    - Internal state for name, exercises, etc.
+    - Validates input with error display.
+
+### Exercise Library
+
+#### `src/components/Exercises/`
+
+- **ExerciseList.jsx**: Browse/filter exercises.
+    - Props: `exercises`, `onSelect`.
+    - Filtering logic by muscle group/category.
+- **ExerciseCard.jsx**: Card view of a single exercise.
+    - Props: `exercise`.
+
+### User Profile Management
+
+#### `src/components/UserProfile/`
+
+- **Profile.jsx**: Displays user details (name, email, phone, etc.).
+- **Settings.jsx**: Allow change password, theme, etc.
+- Fetches and updates user data using `user.js` API.
+
+### UI and Common Components
+
+#### `src/components/UI/`
+
+- **Button.jsx**: Reusable styled button (`variant`, `onClick`, `disabled` props).
+- **Input.jsx**: Custom input control (`type`, `value`, `onChange`, `error` props).
+- **Modal.jsx**: Modal window wrapper (`visible`, `onClose`, etc.).
+- **Navbar.jsx**: App navigation bar with route links, user menu.
+- **Loader.jsx**: Spinner/loader indicator (used for loading states).
+
+### Hooks and Utilities
+
+**Custom React Hooks:**
+
+#### `src/hooks/useAuth.js`
+
+- Manages auth state (JWT token, user object).
+- Provides methods: `login`, `logout`, `register`, `isAuthenticated`.
+- Syncs auth with localStorage/sessionStorage.
+
+#### `src/hooks/useApi.js`
+
+- Simplifies API calls with error/loading state.
+- Pattern:
+  ```js
+  const { data, error, loading, refetch } = useApi(apiFunc, params);
+  ```
+
+#### `src/hooks/useTheme.js`
+
+- Handles theme switching, syncs with localStorage.
+
+### Routing
+
+#### `src/router.jsx`
+
+- Uses React Router v6.
+- Defines all route paths and which `Page` to load.
+- Protects private routes (e.g., dashboard) using `useAuth`.
+- Example route setup:
+  ```jsx
+  <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+  ```
+
+### State Management
+
+#### `src/store.js`
+
+- Global state with Zustand/Redux/Context API.
+- Manages user session, theme setting, sometimes UI modals.
+- Example (using Zustand):
+  ```js
+  import create from 'zustand';
+  export const useStore = create(set => ({
+    user: null,
+    setUser: (user) => set({ user }),
+    // more state...
+  }));
+  ```
+
+### Error Handling and Validation
+
+- **API errors**: Handled by Axios interceptors and displayed via notification/toast or UI error indicators.
+- **Form validation:** Leveraging libraries like [Yup] and [React Hook Form] for login, registration, workout forms, etc.
+- **Unauthorized/Expired Sessions:** Triggers logout or refresh prompts.
+- **UI level:** Error boundary components in `App.jsx` to catch render errors.
+
+### Third-Party Libraries Used
+
+- **React**: UI library.
+- **Vite**: Fast dev server & build tool.
+- **Axios**: HTTP client for API integration.
+- **React Router DOM**: Client-side routing.
+- **Zustand** or **Redux**: State management.
+- **Tailwind CSS**: Utility-first CSS for fast, consistent UI styling.
+- **React Hook Form / Yup**: Form state management and validation.
+- **Heroicons**: Icons.
+- **date-fns** or **moment.js**: Date formatting.
+
+---
+
+## Backend API Integration
+
+- All API endpoints specified in `.env` (`VITE_API_BASE_URL`).
+- API calls grouped by resource (auth, workouts, user, exercises).
+- JWT tokens managed automatically in Axios interceptors.
+- Auth-required endpoints include `Authorization: Bearer <token>` header.
+- Example integration pattern:
+  ```js
+  // In useEffect or action
+  api.workouts.getWorkouts().then(setWorkouts).catch(showError);
+  ```
+
+---
+
+## How to Run the Project Locally
+
+### Prerequisites
+
+- Node.js 18+ and npm or yarn
+- Backend API running (see backend setup—default: `http://localhost:8000`)
+
+### Steps
+
+1. **Clone repo:**
+    ```
+    git clone <project-url>
+    cd gym-frontend
+    ```
+
+2. **Install dependencies:**
+    ```
+    npm install
+    # or
+    yarn install
+    ```
+
+3. **Configure Environment:**
+    - Copy `.env.example` to `.env` and set:
+      ```
+      VITE_API_BASE_URL=http://localhost:8000
+      VITE_API_PREFIX=/api
+      ```
+    - Adjust API URL/prefix if backend routes differ.
+
+4. **Start development server:**
+    ```
+    npm run dev
+    ```
+
+5. **Open browser:**  
+    Visit `http://localhost:5173`
+
+---
+
+## Examples and Usage Patterns
+
+### Example: Creating a New Workout
+
+```jsx
+import { useState } from 'react';
+import { createWorkout } from '../api/workouts';
+
+function NewWorkout() {
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleCreate = async () => {
+    setLoading(true);
+    try {
+      await createWorkout({ name });
+      // success handling...
+    } catch (e) {
+      // show error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <input value={name} onChange={e => setName(e.target.value)} />
+      <button onClick={handleCreate} disabled={loading}>Create</button>
+    </div>
+  );
+}
+```
+
+### Example: Using useAuth
+
+```js
+import { useAuth } from '../hooks/useAuth';
+function ProfileButton() {
+  const { user, logout } = useAuth();
+  return (
+    <div>
+      <span>Hello, {user.name}!</span>
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
+}
+```
+
+---
+
+## Conclusion
+
+The **DOJO Fitness Frontend** is robust, modular, and maintainable—combining best practices in React development, state management, API integration, and error handling. The component-based architecture, clear folder structure, and strong validation make it an excellent reference for internship review, code review, or academic submission.
+
+**For any contribution or queries, refer to the [README.md] in the root directory.**
+
+```
+
+## React Fundamentals Used in This Project
+
+### 1. JSX
+
+- **Where:** Throughout all React components, including `src/App.jsx`, all files under `src/components/`, and the pages in `src/pages/`. Example: the code returned inside the `return (...)` statements uses JSX syntax.
+- **Why:** JSX allows you to write HTML-like code directly in your JavaScript files, making it easy to describe the UI structure.
+- **What problem it solves:** It makes UI creation more intuitive and readable, enabling easier mapping between component logic and the rendered UI.
+
+---
+
+### 2. Components
+
+- **Where:** All files under `src/components/` (e.g., `StatCard.jsx`, `WorkoutList.jsx`, `Profile.jsx`), as well as pages under `src/pages/`.
+- **Why:** Components let you break the UI into reusable, isolated pieces.
+- **What problem it solves:** Encourages modularity, reusability, and maintainability of UI features.
+
+---
+
+### 3. Props
+
+- **Where:** Example: `StatCard.jsx` uses `props` like `{ title, value, icon, trend, subtitle, className }`.
+- **Why:** Props pass data and configuration from parent to child components.
+- **What problem it solves:** Enables component reuse and dynamic behavior depending on parent-supplied data.
+
+---
+
+### 4. State (`useState`)
+
+- **Where:** Used in forms and interactive components; e.g., `NewWorkout` (shown in docs), likely in files like `MemberForm.jsx`, `WorkoutForm.jsx`, and other input-driven components.
+- **Why:** State stores and manages dynamic data inside a component (like form fields, loading states, toggles).
+- **What problem it solves:** Ensures UI stays in sync with user input and internal logic.
+
+---
+
+### 5. Side Effects (`useEffect`)
+
+- **Where:** Used to fetch data or sync state with external systems, probably in dashboard or detail pages, and in form components where API calls are made on mount or on value change.
+- **Why:** `useEffect` handles operations outside rendering, like fetching data from the backend.
+- **What problem it solves:** Allows components to communicate with APIs or perform actions like setting up event listeners.
+
+---
+
+### 6. Conditional Rendering
+
+- **Where:** Used when displaying different UI depending on props or state. Example: trend indicators in `StatCard.jsx` use `{trend && (...)}`
+- **Why:** Shows/hides elements or renders alternatives based on conditions.
+- **What problem it solves:** Provides dynamic, context-driven UI (e.g., "Show error if submission failed", "Hide button if not authenticated").
+
+---
+
+### 7. Lists & Keys
+
+- **Where:** In components that render arrays of data, such as `WorkoutList.jsx`, `ExerciseList.jsx`, or dashboards where stats are mapped.
+- **Why:** Maps over data arrays to render a repeating UI (like a list of exercises).
+- **What problem it solves:** Prevents repetitive code; leverages React’s key prop for performance and stable UI.
+
+---
+
+### 8. Forms & Controlled Inputs
+
+- **Where:** In components like `MemberForm.jsx`, `WorkoutForm.jsx`, and the `NewWorkout` example.
+- **Why:** Controlled forms in React use component state as the single source of truth for input values.
+- **What problem it solves:** Enables input validation, control, and consistency between UI and data logic.
+
+---
+
+### 9. Event Handling
+
+- **Where:** Buttons, forms, and interactive UI elements (e.g., onClick, onChange). For example, `onClick={handleCreate}` in `NewWorkout`, form submissions in `Button.jsx` or `MemberForm.jsx`.
+- **Why:** Runs functions when users interact with the UI.
+- **What problem it solves:** Links user actions to application logic.
+
+---
+
+### 10. API Calls (async/await, Promises)
+
+- **Where:** In API services in `src/api/` (like `workouts.js`, `auth.js`), and where used in components (e.g., submitting forms, fetching workouts, authentication, etc.).
+- **Why:** Fetches or sends data to the backend (FastAPI).
+- **What problem it solves:** Loads dynamic data, syncs front end and back end.
+
+---
+
+### 11. Axios Usage
+
+- **Where:** All API calls use Axios via files in `src/api/`, such as `axios.js` and the feature services (`auth.js`, `workouts.js`, etc.).
+- **Why:** Axios provides a simple API for making HTTP requests.
+- **What problem it solves:** Abstracts AJAX requests, supports interceptors, error handling, and concise syntax.
+
+---
+
+### 12. React Router (Routing, Params)
+
+- **Where:** Routing handled in `src/router.jsx`; pages are routed in `src/pages/` (e.g., `DashboardPage.jsx`, `LoginPage.jsx`). Layouts or params might be used for member/exercise detail pages.
+- **Why:** Provides navigation between pages and handles parameters from URLs.
+- **What problem it solves:** Enables client-side routing, dynamic URLs, and a Single Page Application experience.
+
+---
+
+### 13. Context API or Global State
+
+- **Where:** State management centralized in `src/store.js` (possibly Zustand, Redux, or Context API), and used in components/pages that read or update global state.
+- **Why:** Shares state/data between components without prop drilling.
+- **What problem it solves:** Provides a single source of truth for authentication, user info, settings, etc.
+
+---
+
+### 14. Authentication Handling
+
+- **Where:** Custom hook `useAuth.js` in `src/hooks/`, and logic in pages/components reacting to user state (e.g., showing/hiding navigation, gating protected pages).
+- **Why:** To restrict or change UI based on whether the user is logged in, and to control access to APIs.
+- **What problem it solves:** Secures user sessions, enables login/logout flows, supports roles.
+
+---
+
+### 15. Role-Based UI Rendering
+
+- **Where:** Pages/components that render different content or controls depending on user roles (admin vs. user), typically using data from auth state/global state in `store.js` or through `useAuth`.
+- **Why:** Restricts certain actions or pages to specific users (e.g., only admins can manage members).
+- **What problem it solves:** Enforces app permissions and enhances security/user experience.
+
+---
+
+## Learning Checklist (Tailored for THIS Project)
+
+- Learn JSX syntax in React
+- Learn how to create and compose React components
+- Learn how to pass and use props
+- Learn `useState` for handling component state
+- Learn `useEffect` for side effects and API calls
+- Learn conditional rendering in React
+- Learn how to render lists with keys in React
+- Learn controlled forms and input handling in React
+- Learn React event handling (onClick, onChange)
+- Learn making API requests with Axios (async/await, Promises)
+- Learn React Router v6 for page navigation and params
+- Learn about global state in React (Context API, Zustand, or Redux)
+- Learn creating and using custom hooks (e.g., `useAuth`)
+- Learn authentication flows and protected routes in React
+- Learn role-based UI rendering in React
+
+
